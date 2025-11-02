@@ -1,0 +1,22 @@
+body{margin:18px;background:linear-gradient(180deg,#0b1020,#071021);color:#e6eef8;font-family:Inter,system-ui,sans-serif}
+.app{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:1.2rem;margin:0}
+.lead{color:#9aa3b2}
+.card{background:#0f1724;padding:12px;border-radius:12px;box-shadow:0 6px 22px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+textarea{width:100%;min-height:220px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+button{background:linear-gradient(180deg,#6ea8ff,#3b6eff);border:0;padding:8px 12px;border-radius:8px;color:white;cursor:pointer; margin: 5px;}
+button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#9aa3b2}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.group-card{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.group-title{font-weight:700;margin-bottom:8px}
+.student{padding:6px 8px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,0.04);display:flex;justify-content:space-between}
+.light body{background:#f4f7fb;color:#0b1220}
+.light .card{background:#fff;color:#0b1220;box-shadow:0 6px 18px rgba(12,22,35,0.04);border:1px solid rgba(2,6,23,0.06)}
+.light .student{background:rgba(2,6,23,0.03)}
+.card{
+    margin-top: 10px;
+}
+label{
+    margin-bottom: 10px;
+}
