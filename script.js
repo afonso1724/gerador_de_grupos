@@ -1,4 +1,3 @@
-
 const defaultNames = [
   "Leonel José João",
   "Adelina Cassinda Catombela",
@@ -47,23 +46,24 @@ function getNames() {
   return txt.split('\n').map(s => s.trim()).filter(Boolean);
 }
 
-/* === Distribuição com regra Afonso + Elízio juntos === */
+/* === Distribuição com regra Afonso + Elízio === */
 function distribute(names, G, S) {
   const afonso = "Afonso Daniel Cayombe Fernando";
   const elizio = "Elízio Pedro Kela";
 
-  // remover os dois da lista principal
+  // Remover ambos da lista
   let others = names.filter(n => n !== afonso && n !== elizio);
   shuffle(others);
 
+  // Criar grupos vazios
   const groups = Array.from({ length: G }, () => []);
 
-  // distribuição inicial
+  // Distribuição inicial
   for (let i = 0; i < others.length; i++) {
     groups[i % G].push(others[i]);
   }
 
-  // garantir que ninguém fica sozinho
+  // Garantir que ninguém fica sozinho
   for (let i = 0; i < groups.length; i++) {
     if (groups[i].length === 1 && groups.length > 1) {
       const aluno = groups[i].pop();
@@ -72,7 +72,7 @@ function distribute(names, G, S) {
     }
   }
 
-  // escolher aleatoriamente um grupo para Afonso e Elizio
+  // Inserir Afonso e Elízio juntos num grupo aleatório
   const grupoEscolhido = Math.floor(Math.random() * groups.length);
   groups[grupoEscolhido].push(afonso);
   groups[grupoEscolhido].push(elizio);
@@ -140,26 +140,40 @@ document.getElementById('copyBtn').onclick = function() {
   document.getElementById('status').textContent = 'Grupos copiados para a área de transferência.';
 };
 
-document.getElementById('csvBtn').onclick = function() {
+/* === Gerar PDF === */
+document.getElementById('csvBtn').onclick = async function() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
   const names = getNames();
   const G = parseInt(document.getElementById('numGroups').value) || 6;
   const S = parseInt(document.getElementById('sizeGroup').value) || 6;
   const groups = distribute(names, G, S);
-  let csv = 'Grupo,Nome\n';
   const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  let y = 15;
+  pdf.setFontSize(16);
+  pdf.text("Distribuição de Grupos", 105, y, { align: "center" });
+  y += 10;
+  pdf.setFontSize(12);
+
   groups.forEach((g, i) => {
-    g.forEach(n => (csv += `${L[i] || (i + 1)},${n}\n`));
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`Grupo ${L[i] || (i + 1)}`, 15, y);
+    y += 7;
+    pdf.setFont("helvetica", "normal");
+
+    g.forEach((n, idx) => {
+      pdf.text(`${idx + 1}. ${n}`, 20, y);
+      y += 6;
+      if (y > 270) {
+        pdf.addPage();
+        y = 20;
+      }
+    });
+
+    y += 8;
   });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'grupos.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-  document.getElementById('status').textContent = 'Arquivo CSV exportado.';
+
+  pdf.save("grupos.pdf");
+  document.getElementById('status').textContent = 'Arquivo PDF exportado com sucesso.';
 };
-
-
-
-
