@@ -17,7 +17,7 @@ const defaultNames = [
   "Dário Pascoal Teodoro Inácio",
   "Domingos Muanha Gunza",
   "Dumilda Patrícia Almada Coelho",
-  "Elízio Pedro Kela",
+  "Elizio Pedro Kela",
   "Estefânia Letícia Alex",
   "José Olavo Lucas Gamboa",
   "Josemar Sambo Luamba",
@@ -46,36 +46,57 @@ function getNames() {
   return txt.split('\n').map(s => s.trim()).filter(Boolean);
 }
 
-/* === Distribuição com regra Afonso + Elízio === */
+/* === Distribuição com regra Afonso + Elízio + Estefânia (Respeitando Limite) === */
 function distribute(names, G, S) {
   const afonso = "Afonso Daniel Cayombe Fernando";
   const elizio = "Elízio Pedro Kela";
+  const estefania = "Estefânia Letícia Alex";
 
-  // Remover ambos da lista
-  let others = names.filter(n => n !== afonso && n !== elizio);
+  // 1. Separar o trio e embaralhar os outros
+  let others = names.filter(n => n !== afonso && n !== elizio && n !== estefania);
   shuffle(others);
 
-  // Criar grupos vazios
+  // 2. Criar estrutura de grupos
   const groups = Array.from({ length: G }, () => []);
 
-  // Distribuição inicial
-  for (let i = 0; i < others.length; i++) {
-    groups[i % G].push(others[i]);
-  }
+  // 3. Definir qual grupo receberá o trio e já colocar o trio lá
+  const grupoTrioIdx = Math.floor(Math.random() * G);
+  groups[grupoTrioIdx].push(afonso, elizio, estefania);
 
-  // Garantir que ninguém fica sozinho
-  for (let i = 0; i < groups.length; i++) {
-    if (groups[i].length === 1 && groups.length > 1) {
-      const aluno = groups[i].pop();
-      if (i > 0) groups[i - 1].push(aluno);
-      else groups[i + 1].push(aluno);
+  // 4. Distribuir os restantes alunos respeitando o limite S de cada grupo
+  let currentGroup = 0;
+  while (others.length > 0) {
+    // Se o grupo atual já estiver cheio (S), passa para o próximo
+    if (groups[currentGroup].length >= S) {
+      currentGroup++;
+      // Se chegarmos ao fim dos grupos e ainda houver gente, 
+      // adicionamos ao grupo que tiver menos gente para não perder alunos
+      if (currentGroup >= G) currentGroup = 0; 
+    }
+
+    // Se após a verificação o grupo ainda tem vaga, adiciona um aluno
+    if (groups[currentGroup].length < S) {
+      groups[currentGroup].push(others.shift());
+    } else {
+      // Caso de segurança: se todos os grupos estão no limite mas sobrou gente, 
+      // distribui onde couber (evita loop infinito se G * S < total de nomes)
+      let smallestGroup = groups.reduce((prev, curr) => (prev.length < curr.length ? prev : curr));
+      smallestGroup.push(others.shift());
     }
   }
 
-  // Inserir Afonso e Elízio juntos num grupo aleatório
-  const grupoEscolhido = Math.floor(Math.random() * groups.length);
-  groups[grupoEscolhido].push(afonso);
-  groups[grupoEscolhido].push(elizio);
+  // 5. Garantir que ninguém fica sozinho (mínimo 2 por grupo)
+  groups.forEach((g, i) => {
+    if (g.length === 1 && G > 1) {
+      const alunoSolitário = g.pop();
+      const destino = i === 0 ? 1 : i - 1;
+      groups[destino].push(alunoSolitário);
+    }
+  });
+
+  // 6. BARALHAR INTERNAMENTE cada grupo
+  // Isso garante que o trio não apareça em sequência (#1, #2, #3)
+  groups.forEach(g => shuffle(g));
 
   return groups;
 }
@@ -87,7 +108,7 @@ function renderGroups(groups) {
   const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let total = 0;
 
-  groups.forEach((g, i) => {
+  groups.filter(g => g.length > 0).forEach((g, i) => {
     const d = document.createElement('div');
     d.className = 'group-card';
     d.innerHTML =
@@ -103,11 +124,13 @@ function renderGroups(groups) {
 /* === Inicialização === */
 window.addEventListener('load', () => {
   const namesField = document.getElementById('names');
-  if (!namesField.value.trim()) {
+  if (namesField && !namesField.value.trim()) {
     namesField.value = defaultNames.join('\n');
   }
-  document.getElementById('status').textContent =
-    `Estado: ${defaultNames.length} nomes carregados automaticamente.`;
+  const statusField = document.getElementById('status');
+  if (statusField) {
+    statusField.textContent = `Estado: ${defaultNames.length} nomes carregados automaticamente.`;
+  }
 });
 
 /* === Botões === */
@@ -157,6 +180,7 @@ document.getElementById('csvBtn').onclick = async function() {
   pdf.setFontSize(12);
 
   groups.forEach((g, i) => {
+    if (g.length === 0) return;
     pdf.setFont("helvetica", "bold");
     pdf.text(`Grupo ${L[i] || (i + 1)}`, 15, y);
     y += 7;
