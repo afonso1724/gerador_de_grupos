@@ -49,7 +49,7 @@ function getNames() {
 /* === Distribuição com regra Afonso + Elízio + Estefânia (Respeitando Limite) === */
 function distribute(names, G, S) {
   const afonso = "Afonso Daniel Cayombe Fernando";
-  const elizio = "Elízio Pedro Kela";
+  const elizio = "Elizio Pedro Kela";
   const estefania = "Estefânia Letícia Alex";
 
   // 1. Separar o trio e embaralhar os outros
